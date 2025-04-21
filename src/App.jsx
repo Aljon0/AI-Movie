@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useRef, useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
@@ -20,6 +21,7 @@ export default function MovieRecommendationApp() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
+  const [isAIThinking, setIsAIThinking] = useState(false);
 
   useEffect(() => {
     // Authenticate user anonymously
@@ -64,7 +66,10 @@ export default function MovieRecommendationApp() {
         },
         body: JSON.stringify({ query }),
       });
-      return await response.json();
+      const data = await response.json();
+      console.log("API Response:", data); // Debug log
+      console.log("Recommendations:", data.recommendations); // Check recommendations
+      return data;
     } catch (error) {
       console.error("Failed to get recommendations:", error);
       return {
@@ -76,7 +81,7 @@ export default function MovieRecommendationApp() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (input.trim() === "") return;
+    if (input.trim() === "" || isAIThinking) return;
 
     const userMessage = {
       id: messages.length + 1,
@@ -86,6 +91,7 @@ export default function MovieRecommendationApp() {
     };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsAIThinking(true);
 
     const typingMessage = {
       id: messages.length + 2,
@@ -95,19 +101,34 @@ export default function MovieRecommendationApp() {
     };
     setMessages((prev) => [...prev, typingMessage]);
 
-    const response = await getAIResponse(input);
+    try {
+      const response = await getAIResponse(input);
 
-    setMessages((prev) =>
-      prev
-        .filter((msg) => !msg.typing)
-        .concat({
-          id: messages.length + 2,
-          text: response.text,
-          recommendations: response.recommendations,
-          sender: "bot",
-          timestamp: new Date(),
-        })
-    );
+      setMessages((prev) =>
+        prev
+          .filter((msg) => !msg.typing)
+          .concat({
+            id: messages.length + 2,
+            text: response.text,
+            recommendations: response.recommendations,
+            sender: "bot",
+            timestamp: new Date(),
+          })
+      );
+    } catch (error) {
+      setMessages((prev) =>
+        prev
+          .filter((msg) => !msg.typing)
+          .concat({
+            id: messages.length + 2,
+            text: "Sorry, I'm having trouble processing your request. Please try again.",
+            sender: "bot",
+            timestamp: new Date(),
+          })
+      );
+    } finally {
+      setIsAIThinking(false);
+    }
   };
 
   const addToFavorites = async (movie) => {

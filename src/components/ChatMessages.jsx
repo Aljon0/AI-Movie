@@ -1,3 +1,5 @@
+import MovieCard from "./MovieCard";
+
 export default function ChatMessages({
   messages,
   addToFavorites,
