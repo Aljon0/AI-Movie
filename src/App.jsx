@@ -3,6 +3,8 @@ import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
 import FavoritesList from "./components/FavoritesList";
 import Header from "./components/Header";
+import { auth } from "./firebase";
+import { signInAnonymously } from "firebase/auth";
 
 export default function MovieRecommendationApp() {
   const [messages, setMessages] = useState([
@@ -16,7 +18,22 @@ export default function MovieRecommendationApp() {
   const [input, setInput] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    // Authenticate user anonymously
+    const authenticate = async () => {
+      try {
+        const userCredential = await signInAnonymously(auth);
+        setUserId(userCredential.user.uid);
+        loadFavorites(userCredential.user.uid);
+      } catch (error) {
+        console.error("Authentication error:", error);
+      }
+    };
+    authenticate();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -26,69 +43,35 @@ export default function MovieRecommendationApp() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const getAIResponse = (query) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (
-          query.toLowerCase().includes("sci-fi") ||
-          query.toLowerCase().includes("interstellar")
-        ) {
-          resolve({
-            text: "Based on your interest in sci-fi movies like Interstellar, here are some recommendations:",
-            recommendations: [
-              {
-                id: 1,
-                title: "Arrival",
-                year: 2016,
-                image: "/api/placeholder/300/450",
-                summary:
-                  "A linguist works with the military to communicate with alien lifeforms after twelve mysterious spacecraft appear around the world.",
-                rating: 4.7,
-              },
-              {
-                id: 2,
-                title: "Dune",
-                year: 2021,
-                image: "/api/placeholder/300/450",
-                summary:
-                  "Feature adaptation of Frank Herbert's science fiction novel about the son of a noble family entrusted with the protection of the most valuable asset in the galaxy.",
-                rating: 4.5,
-              },
-            ],
-          });
-        } else if (query.toLowerCase().includes("comedy")) {
-          resolve({
-            text: "Here are some great comedy movies you might enjoy:",
-            recommendations: [
-              {
-                id: 3,
-                title: "The Grand Budapest Hotel",
-                year: 2014,
-                image: "/api/placeholder/300/450",
-                summary:
-                  "A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.",
-                rating: 4.6,
-              },
-            ],
-          });
-        } else {
-          resolve({
-            text: "I'd recommend these popular movies based on your query:",
-            recommendations: [
-              {
-                id: 4,
-                title: "Everything Everywhere All at Once",
-                year: 2022,
-                image: "/api/placeholder/300/450",
-                summary:
-                  "An aging Chinese immigrant is swept up in an insane adventure, where she alone can save the world by exploring other universes connecting with the lives she could have led.",
-                rating: 4.8,
-              },
-            ],
-          });
-        }
-      }, 1000);
-    });
+  const loadFavorites = async (uid) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/favorites/${uid}`
+      );
+      const data = await response.json();
+      setFavorites(data.favorites);
+    } catch (error) {
+      console.error("Failed to load favorites:", error);
+    }
+  };
+
+  const getAIResponse = async (query) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query }),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to get recommendations:", error);
+      return {
+        text: "Sorry, I couldn't fetch recommendations right now. Please try again later.",
+        recommendations: [],
+      };
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -127,14 +110,36 @@ export default function MovieRecommendationApp() {
     );
   };
 
-  const addToFavorites = (movie) => {
+  const addToFavorites = async (movie) => {
     if (!favorites.some((fav) => fav.id === movie.id)) {
-      setFavorites((prev) => [...prev, movie]);
+      try {
+        await fetch("http://localhost:5000/api/favorites", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId, movieId: movie.id }),
+        });
+        setFavorites((prev) => [...prev, movie]);
+      } catch (error) {
+        console.error("Failed to add favorite:", error);
+      }
     }
   };
 
-  const removeFromFavorites = (movieId) => {
-    setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
+  const removeFromFavorites = async (movieId) => {
+    try {
+      await fetch("http://localhost:5000/api/favorites", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, movieId }),
+      });
+      setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
+    } catch (error) {
+      console.error("Failed to remove favorite:", error);
+    }
   };
 
   return (
