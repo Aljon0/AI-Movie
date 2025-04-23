@@ -4,8 +4,6 @@ import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
 import FavoritesList from "./components/FavoritesList";
 import Header from "./components/Header";
-import { auth } from "./firebase";
-import { signInAnonymously } from "firebase/auth";
 
 export default function MovieRecommendationApp() {
   const [messages, setMessages] = useState([
@@ -19,23 +17,9 @@ export default function MovieRecommendationApp() {
   const [input, setInput] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
   const [isAIThinking, setIsAIThinking] = useState(false);
-
-  useEffect(() => {
-    // Authenticate user anonymously
-    const authenticate = async () => {
-      try {
-        const userCredential = await signInAnonymously(auth);
-        setUserId(userCredential.user.uid);
-        loadFavorites(userCredential.user.uid);
-      } catch (error) {
-        console.error("Authentication error:", error);
-      }
-    };
-    authenticate();
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     scrollToBottom();
@@ -45,15 +29,31 @@ export default function MovieRecommendationApp() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const loadFavorites = async (uid) => {
+  // Load favorites from localStorage
+  const loadFavorites = () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/favorites/${uid}`
-      );
-      const data = await response.json();
-      setFavorites(data.favorites);
+      setIsLoading(true);
+      const storedFavorites = localStorage.getItem("movieAppFavorites");
+      if (storedFavorites) {
+        setFavorites(JSON.parse(storedFavorites));
+      }
     } catch (error) {
-      console.error("Failed to load favorites:", error);
+      console.error("Failed to load favorites from localStorage:", error);
+      setFavorites([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Save favorites to localStorage
+  const saveFavorites = (updatedFavorites) => {
+    try {
+      localStorage.setItem(
+        "movieAppFavorites",
+        JSON.stringify(updatedFavorites)
+      );
+    } catch (error) {
+      console.error("Failed to save favorites to localStorage:", error);
     }
   };
 
@@ -67,8 +67,8 @@ export default function MovieRecommendationApp() {
         body: JSON.stringify({ query }),
       });
       const data = await response.json();
-      console.log("API Response:", data); // Debug log
-      console.log("Recommendations:", data.recommendations); // Check recommendations
+      console.log("API Response:", data);
+      console.log("Recommendations:", data.recommendations);
       return data;
     } catch (error) {
       console.error("Failed to get recommendations:", error);
@@ -131,37 +131,24 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  const addToFavorites = async (movie) => {
+  const addToFavorites = (movie) => {
     if (!favorites.some((fav) => fav.id === movie.id)) {
-      try {
-        await fetch("http://localhost:5000/api/favorites", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId, movieId: movie.id }),
-        });
-        setFavorites((prev) => [...prev, movie]);
-      } catch (error) {
-        console.error("Failed to add favorite:", error);
-      }
+      const updatedFavorites = [...favorites, movie];
+      setFavorites(updatedFavorites);
+      saveFavorites(updatedFavorites);
     }
   };
 
-  const removeFromFavorites = async (movieId) => {
-    try {
-      await fetch("http://localhost:5000/api/favorites", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, movieId }),
-      });
-      setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
-    } catch (error) {
-      console.error("Failed to remove favorite:", error);
-    }
+  const removeFromFavorites = (movieId) => {
+    const updatedFavorites = favorites.filter((movie) => movie.id !== movieId);
+    setFavorites(updatedFavorites);
+    saveFavorites(updatedFavorites);
   };
+
+  useEffect(() => {
+    // Load favorites from localStorage on component mount
+    loadFavorites();
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -188,6 +175,7 @@ export default function MovieRecommendationApp() {
             <FavoritesList
               favorites={favorites}
               removeFromFavorites={removeFromFavorites}
+              isLoading={isLoading}
             />
           )}
         </div>
