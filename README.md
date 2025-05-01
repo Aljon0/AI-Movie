@@ -64,12 +64,6 @@ Click to save any recommendation. Favorites are stored in your browser’s local
 
 ---
 
-## 📄 License
-
-[MIT](LICENSE)
-
----
-
 ## 🤝 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
