@@ -1,12 +1,78 @@
-# React + Vite
+# 🎬 AI Movie Recommendation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A smart web app that suggests movies based on natural language queries using AI and TMDB. Simply type prompts like “Recommend a sci-fi movie like Interstellar” and get intelligent suggestions with posters and summaries.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+✅ **Chat Interface**  
+Type natural language queries to receive personalized movie suggestions.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+✅ **AI-Powered Responses**  
+Uses Hugging Face AI to understand context and provide relevant movie recommendations, complete with:
+- Movie poster  
+- Title and release date  
+- Description / summary
+
+✅ **Save Favorites**  
+Click to save any recommendation. Favorites are stored in your browser’s local storage and persist across sessions.
+
+---
+
+## 🛠 Tech Stack
+
+- **React.js** – Frontend UI  
+- **Tailwind CSS** – Modern styling  
+- **Hugging Face Transformers** – Natural language understanding and generation  
+- **TMDB API** – Movie data (titles, genres, posters, summaries)  
+- **LocalStorage** – Save and persist user favorites
+
+---
+
+## 🎯 Project Goals
+
+- Allow users to find movie recommendations naturally  
+- Integrate AI with real-time movie data  
+- Provide a modern, responsive, and interactive user experience
+
+---
+
+## 📈 Outcomes
+
+- Delivered an intuitive and interactive movie discovery tool  
+- Reduced user decision fatigue through smart recommendations  
+- Empowered users to save and manage their favorite picks
+
+---
+
+## 🧠 Lessons Learned
+
+- How to connect AI models to a frontend interface  
+- Handling third-party API data and rate limits  
+- Managing browser local storage for lightweight state persistence  
+- Prompt tuning for more accurate AI recommendations
+
+---
+
+## 🧩 Future Improvements
+
+- User login to sync favorites across devices  
+- TV show & documentary support  
+- Streaming availability filters  
+- User feedback system to refine AI results
+
+---
+
+## 📄 License
+
+[MIT](LICENSE)
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
