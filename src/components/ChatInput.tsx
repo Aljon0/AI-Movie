@@ -1,11 +1,12 @@
 import { Send } from "lucide-react";
+import { ChatInputProps } from "../utils/types";
 
 export default function ChatInput({
   input,
   setInput,
   handleSendMessage,
   isAIThinking,
-}) {
+}: ChatInputProps) {
   return (
     <form
       onSubmit={handleSendMessage}

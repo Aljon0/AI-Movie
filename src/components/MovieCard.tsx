@@ -1,4 +1,6 @@
-function MovieCard({ movie, addToFavorites }) {
+import { MovieCardProps } from "../utils/types";
+
+export default function MovieCard({ movie, addToFavorites }: MovieCardProps) {
   return (
     <div className="bg-gray-50 rounded-md shadow-sm p-3 flex">
       <div className="w-16 h-24 bg-gray-200 flex-shrink-0 rounded overflow-hidden">
@@ -48,5 +50,3 @@ function MovieCard({ movie, addToFavorites }) {
     </div>
   );
 }
-
-export default MovieCard;

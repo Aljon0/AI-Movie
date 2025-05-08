@@ -1,12 +1,11 @@
 import { Bookmark, Star, Loader } from "lucide-react";
+import { FavoritesListProps } from "../utils/types";
 
 export default function FavoritesList({
   favorites = [],
   removeFromFavorites,
   isLoading = false,
-}) {
-  // Make sure favorites is never undefined with default parameter
-
+}: FavoritesListProps) {
   if (isLoading) {
     return (
       <div className="flex-1 overflow-y-auto p-4 bg-[#E9F1F7] flex items-center justify-center">

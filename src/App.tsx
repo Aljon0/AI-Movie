@@ -1,12 +1,12 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useRef, useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
 import FavoritesList from "./components/FavoritesList";
 import Header from "./components/Header";
+import { Message, Movie } from "./utils/types";
 
 export default function MovieRecommendationApp() {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       text: "Hello! I'm your movie recommendation assistant. Tell me what kind of movies you enjoy, and I'll suggest some great options for you.",
@@ -15,11 +15,12 @@ export default function MovieRecommendationApp() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState<Movie[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
 
   useEffect(() => {
     scrollToBottom();
@@ -29,7 +30,6 @@ export default function MovieRecommendationApp() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load favorites from localStorage
   const loadFavorites = () => {
     try {
       setIsLoading(true);
@@ -45,8 +45,7 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  // Save favorites to localStorage
-  const saveFavorites = (updatedFavorites) => {
+  const saveFavorites = (updatedFavorites: Movie[]) => {
     try {
       localStorage.setItem(
         "movieAppFavorites",
@@ -57,7 +56,7 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  const getAIResponse = async (query) => {
+  const getAIResponse = async (query: string): Promise<{text: string, recommendations: Movie[]}> => {
     try {
       const response = await fetch(
         "https://ai-mr-api.onrender.com/api/recommend",
@@ -82,11 +81,11 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "" || isAIThinking) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       id: messages.length + 1,
       text: input,
       sender: "user",
@@ -96,7 +95,7 @@ export default function MovieRecommendationApp() {
     setInput("");
     setIsAIThinking(true);
 
-    const typingMessage = {
+    const typingMessage: Message = {
       id: messages.length + 2,
       typing: true,
       sender: "bot",
@@ -134,7 +133,7 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  const addToFavorites = (movie) => {
+  const addToFavorites = (movie: Movie) => {
     if (!favorites.some((fav) => fav.id === movie.id)) {
       const updatedFavorites = [...favorites, movie];
       setFavorites(updatedFavorites);
@@ -142,14 +141,13 @@ export default function MovieRecommendationApp() {
     }
   };
 
-  const removeFromFavorites = (movieId) => {
+  const removeFromFavorites = (movieId: number) => {
     const updatedFavorites = favorites.filter((movie) => movie.id !== movieId);
     setFavorites(updatedFavorites);
     saveFavorites(updatedFavorites);
   };
 
   useEffect(() => {
-    // Load favorites from localStorage on component mount
     loadFavorites();
   }, []);
 
@@ -172,6 +170,7 @@ export default function MovieRecommendationApp() {
                 input={input}
                 setInput={setInput}
                 handleSendMessage={handleSendMessage}
+                isAIThinking={isAIThinking}
               />
             </>
           ) : (

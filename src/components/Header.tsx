@@ -1,6 +1,7 @@
 import { Bookmark, Film, Search } from "lucide-react";
+import { HeaderProps } from "../utils/types";
 
-export default function Header({ showFavorites, setShowFavorites }) {
+export default function Header({ showFavorites, setShowFavorites }: HeaderProps) {
   return (
     <header className="bg-[#131B23] text-white p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">

@@ -1,10 +1,11 @@
 import MovieCard from "./MovieCard";
+import { ChatMessagesProps } from "../utils/types";
 
 export default function ChatMessages({
   messages,
   addToFavorites,
   messagesEndRef,
-}) {
+}: ChatMessagesProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4 bg-[#E9F1F7]">
       <div className="max-w-3xl mx-auto space-y-4">
